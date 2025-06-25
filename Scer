@@ -1,0 +1,37 @@
+option domain-name "local.loc";
+option domain-name-servers 10.0.2.1;
+# Переменная для определения архитектуры клиента:
+option arch code 93 = unsigned integer 16;
+# Объявляю пространство имен для ipxe
+option space ipxe;
+option ipxe.no-pxedhcp code 176 = unsigned integer 8;
+default-lease-time 600;
+max-lease-time 7200;
+ddns-update-style none;
+# Возможность получать клиентам IP-адреса
+authoritative;
+# Выделение подсети
+subnet 10.0.2.0 netmask 255.255.255.0 {
+range 10.0.2.100 10.0.2.200;
+option domain-name-servers 10.0.2.1;
+option domain-name "local.loc";
+option routers 10.0.2.1;
+option broadcast-address 10.0.2.255;
+default-lease-time 600;
+max-lease-time 7200;
+}
+# Отключение задержки в iPXE ожидания прокси DHCP.
+# Экономит пару секунд.
+option ipxe.no-pxedhcp = 1;
+# Используя ранее установленную переменную,
+# в зависимости от режима загрузки клиента,
+# идет выбор, какой загрузчик отправить клиенту:
+if option arch != 00:00 {
+filename "ipxe.efi";
+} else {
+filename "undionly.kpxe";
+}
+# Установка корневой директории с загрузчиками и конфигурациями
+next-server 10.0.2.5;
+option tftp-server-name "10.0.2.5";
+option root-path "tftp://10.0.2.5:/srv/tftp/";
